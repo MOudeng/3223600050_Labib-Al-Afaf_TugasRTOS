@@ -1,89 +1,38 @@
-# 3223600050_Labib-Al-Afaf_TugasRTOS
+SP32-S3 RTOS — Percobaan Peripheral (2 Core) -- Wokwi Simulator
+Dokumentasi singkat untuk menghubungkan dan menjalankan peripheral pada ESP32-S3 (2 core) menggunakan FreeRTOS.
 
-Tujuan Percobaan
+Perangkat yang digunakan:
 
-Menguji sistem kontrol berbasis ESP32-S3 yang mengendalikan:
-Motor servo dengan potensiometer,
-Motor stepper dengan rotary encoder,
-LED indikator heartbeat (kedip setiap 500ms),
-Buzzer aktif saat tombol ditekan,
-OLED display (sementara dinonaktifkan di kode).
+3 × LED
+2 × Push button
+1 × Buzzer (active/passive)
+1 × OLED (I2C, 128x64, addr 0x3C)
+1 × Potensiometer (ADC)
+1 × Rotary encoder (A, B, push)
+1 × Motor stepper (dengan driver step/dir)
+1 × Servo (PWM)
 
-Peralatan dan Komponen
-No	Komponen	Jumlah	Keterangan
-1	ESP32-S3 WROOM-1	1	Mikrokontroler utama
-2	Motor servo (SG90 / MG90)	1	Digunakan untuk kontrol posisi
-3	Motor stepper + Driver A4988	1 set	Untuk kontrol gerakan presisi
-4	Potensiometer 10kΩ	1	Input analog untuk servo
-5	Rotary Encoder	1	Mengatur posisi stepper
-6	Buzzer aktif	1	Indikator bunyi tombol
-7	3x LED	3	Indikator visual
-8	Tombol tekan	2	Untuk input manual
-9	OLED I2C 128×64	1	(opsional, bisa diaktifkan nanti)
-10	Kabel jumper & breadboard	secukupnya	Penghubung komponen
+<img width="647" height="630" alt="image" src="https://github.com/user-attachments/assets/a93557af-12de-48f3-9283-0d3f45da5e9f" />](https://github.com/user-attachments/assets/a93557af-12de-48f3-9283-0d3f45da5e9f)
 
-Langkah Perakitan
-(merujuk ke gambar yang kamu kirim)
-Hubungkan daya & ground bersama:
-Semua GND komponen → GND ESP32
-Semua VCC (3.3V atau 5V sesuai komponen) → pin 3V3 / 5V ESP32
+LED1: GPIO10
+LED2: GPIO11
+LED3: GPIO12
+BUTTON1: GPIO13 (INPUT_PULLUP)
+BUTTON2: GPIO14 (INPUT_PULLUP)
+BUZZER (PWM): GPIO3
+OLED (I2C): SDA = GPIO8, SCL = GPIO9
+POT (ADC): GPIO1 (ADC1 channel)
+ENCODER CLK (A): GPIO6
+ENCODER DT (B): GPIO7
+ENCODER SW: GPIO5
+STEPPER IN1 (A-): GPIO21
+STEPPER IN2 (A+): GPIO39
+STEPPER IN3 (B+): GPIO40
+STEPPER IN3 (B-): GPIO38
+SERVO (PWM): GPIO16
 
-Sambungkan pin sesuai kode:
+Cara menjalankan tiap I/O di tiap core (FreeRTOS)
+Pada ESP32 dapat membuat task FreeRTOS dan mem-pinnya ke core tertentu dengan xTaskCreatePinnedToCore. Contoh singkat pembuatan 2 tugas: satu di core 0 dan satu di core 1.
 
-Komponen	Pin ESP32	Keterangan
-Servo	17	Kontrol PWM servo
-Stepper (A4988)	STEP: 13, DIR: 12	Kontrol langkah & arah
-Rotary Encoder	CLK: 18, DT: 19	Input arah dan langkah
-Potensiometer	OUT → 5 (ADC)	Input analog
-Tombol	6	Input digital, aktif LOW
-LED utama	2	Kedip “heartbeat”
-Buzzer	4	Aktif saat tombol ditekan
-OLED	SDA: 8, SCL: 9	I2C (sementara nonaktif di kode)
-
-Langkah Pengujian
-Tahap 1 – Uji Upload & Serial Monitor
-
-Hubungkan ESP32 ke PC.
-Buka Arduino IDE / Wokwi.
-Pilih board ESP32-S3 Dev Module.
-Upload program yang kamu tulis.
-Buka Serial Monitor (115200 baud) → pastikan muncul pesan:
-Booting Panel Kontrol (MODE DEBUG STEPPER)...
-OLED Nonaktif. Tes Stepper dan LED.
-
-Tahap 2 – Uji LED Heartbeat
-LED pada pin 2 harus berkedip setiap 0.5 detik (500ms).
-Ini menunjukkan loop dan timing sistem berjalan normal.
-
-Tahap 3 – Uji Potensiometer ke Servo
-Putar potensiometer perlahan.
-Servo akan mengikuti arah rotasi (antara 0°–180°).
-Jika servo bergetar → periksa kabel daya (gunakan 5V eksternal jika perlu).
-
-Tahap 4 – Uji Rotary Encoder ke Stepper
-Putar rotary encoder.
-Amati Serial Monitor: harus muncul nilai seperti
-Encoder di: 1
-Encoder di: 2
-Encoder di: 3
-
-
-Stepper bergerak maju/mundur sesuai arah rotasi.
-
-Jika arah salah, tukar kabel DIR motor atau ubah arah di kode:
-stepper.moveTo(-encoderPos * 50);
-
-🔘 Tahap 5 – Uji Tombol dan Buzzer
-Tekan tombol pada pin 6 → buzzer menyala.
-Lepas tombol → buzzer mati.
-
-🖥 Tahap 6 – (Opsional) Aktifkan OLED Display
-Hapus tanda komentar // pada bagian OLED di kode:
-
-Wire.begin(SDA_PIN, SCL_PIN);
-display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-
-Upload ulang.
-
-Layar akan menampilkan data seperti nilai potensiometer dan posisi encoder.
+Hasil demo terdapat di drive berikut:
+https://drive.google.com/drive/folders/1CggXNAXAsgzcbwBkyvPdySSt897X0TBs?usp=sharing
